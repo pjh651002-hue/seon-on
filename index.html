@@ -404,7 +404,7 @@ ko:{
  eyeCloseSay:'눈을 편안히 감습니다.', eyeHalfSay:'눈은 반쯤 뜨고, 두세 걸음 앞 바닥에 시선을 둡니다.',
  stepH:'일곱 번 앉으셨습니다.',
  stepP:'이제 한 번은 실제로 앉아보시겠습니까? 가까운 절에서 이 수행을 함께 하는 곳이 있습니다. 온라인에서 일곱 번 앉았다면 이미 충분합니다.',
- stepBtn:'가까운 곳 찾아보기',
+ stepBtn:'가까운 곳 찾아보기', stepQuery:'가까운 절 참선 명상',
  waitH:'곧 함께 시작합니다', waitNote:'친구도 같은 화면을 보고 있습니다.',
  linkMade:'링크를 복사했습니다. 친구에게 보내세요. 3분 뒤 둘이 같이 시작합니다.',
  daily:['오늘의 한 줄']
@@ -447,7 +447,7 @@ en:{
  eyeCloseSay:'Let the eyes close gently.', eyeHalfSay:'Keep the eyes half-open, resting on the ground two or three steps ahead.',
  stepH:'You have sat seven times.',
  stepP:'Would you sit once for real? There are temples nearby where this practice is done together. Seven times online is already enough.',
- stepBtn:'Find somewhere near',
+ stepBtn:'Find somewhere near', stepQuery:'Korean Buddhist temple meditation',
  waitH:'Beginning together shortly', waitNote:'Your friend is looking at the same screen.',
  linkMade:'Link copied. Send it to your friend. You both begin in three minutes.',
  daily:['A line for today']
@@ -955,7 +955,10 @@ $('btnOpen').onclick=()=>{
   // 일곱 번째에 딱 한 번
   $('stepBox').innerHTML = (n===7)
     ? `<div class="step-box"><p><b>${L.stepH}</b><br>${L.stepP}</p>
-       <button class="next" style="margin-top:4px">${L.stepBtn}</button></div>` : '';
+       <button class="next" id="btnStep" style="margin-top:4px">${L.stepBtn}</button></div>` : '';
+  if(n===7) $('btnStep').onclick=()=>{
+    window.open('https://www.google.com/maps/search/'+encodeURIComponent(L.stepQuery),'_blank','noopener');
+  };
   show('open');
 };
 function reset(){Voice.hush();clearAll();$('memo').value='';state.again=null;state.dedi=null;
