@@ -793,9 +793,10 @@ function applyLang(){
   $('vwarn').textContent = Voice.ok
     ? (state.lang==='ko'?'기기에 내장된 음성으로 읽어 드립니다. 소리를 켜 주세요.':'Read aloud by the voice built into your device. Please turn the sound on.')
     : (state.lang==='ko'?'이 브라우저는 음성 안내를 지원하지 않습니다. 안내는 글로 나옵니다.':'Spoken guidance is unavailable here. The guidance appears as text.');
-  // 오늘의 한 줄 — 날짜로 정한다
+  // 오늘의 한 줄 — 한국 시각(UTC+9) 기준 날짜로 정한다.
+  // 보는 사람의 시간대를 따라가면 나라마다 다른 줄이 나오므로 기준을 하나로 둔다.
   const arr=DAILY[state.lang];
-  const day=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/864e5);
+  const day=Math.floor((Date.now()+9*36e5)/864e5);
   $('daily').innerHTML=`<b>${state.lang==='ko'?'오늘의 한 줄':'A LINE FOR TODAY'}</b>${arr[day%arr.length]}`;
   $('waitH').textContent=L.waitH; $('waitNote').textContent=L.waitNote;
 }
@@ -815,7 +816,13 @@ function openBefore(){
   const S=Store.read();
   const past=[...S.sessions].reverse().find(s=>s.key===state.key&&s.memo);
   const e=$('echo');
-  if(past){ e.style.display='block'; e.innerHTML=`<b>${t().echoH}</b>“${past.memo}”`; }
+  if(past){
+    e.style.display='block';
+    e.textContent='';
+    const h=document.createElement('b'); h.textContent=t().echoH;
+    e.appendChild(h);
+    e.appendChild(document.createTextNode('\u201C'+past.memo+'\u201D'));
+  }
   else e.style.display='none';
   show('before');
 }
@@ -889,11 +896,17 @@ function begin(){
   const cyc=()=>{ph=(ph+1)%2;br.textContent=words[ph];timers.push(setTimeout(cyc,span[ph]));};
   timers.push(setTimeout(cyc,span[0]));
 
+  // 안내문은 700ms 뒤에 바뀌고 서서히 나타난다. 남은 시간이 그만큼도 안 되면
+  // 글자가 보이기 전에 끝나므로 아예 예약하지 않는다.
+  // 20초 미리보기에서 마지막 두 줄이 그랬다. 3분 이상 수행에는 영향이 없다.
+  const FADE=700, MIN_SHOW=1800;
   d.cues.forEach(([at,x])=>{
+    const t0=at*total*1000;
+    if(t0+FADE+MIN_SHOW>total*1000) return;
     timers.push(setTimeout(()=>{
       guide.classList.remove('show');
-      timers.push(setTimeout(()=>{guide.textContent=x;guide.classList.add('show');Voice.say(x);},700));
-    },at*total*1000));});
+      timers.push(setTimeout(()=>{guide.textContent=x;guide.classList.add('show');Voice.say(x);},FADE));
+    },t0));});
 
   // 죽비로 구간을 나눈다 — 6분 이상
   if(!state.peek && total>=360){
@@ -932,10 +945,10 @@ function result(){
   $('verdict').textContent=v;
   show('after');
 }
-document.querySelectorAll('.pick').forEach(b=>{
-  if(b.id) return;
+const AGAIN={pickYes:'yes',pickMaybe:'maybe',pickNo:'no'};
+document.querySelectorAll('#picks .pick').forEach(b=>{
   b.onclick=()=>{document.querySelectorAll('#picks .pick').forEach(x=>x.classList.remove('sel'));
-    b.classList.add('sel');state.again=b.textContent;};
+    b.classList.add('sel');state.again=AGAIN[b.dataset.t]||null;};
 });
 
 /* ═══ 13. 열림 — 뿌리, 꺼지지 않는 점, 일곱 번째의 한 걸음 ═══ */
