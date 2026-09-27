@@ -730,7 +730,10 @@ const t=()=>T[state.lang];
 const p=()=>P[state.key][state.lang];
 
 /* ═══ 5. 음성 ═══
-   ▸ 직접 녹음 파일로 교체할 때는 say() 안쪽만 바꾸면 됩니다. ═══ */
+   ▸ 직접 녹음 파일로 교체할 때는 say() 안쪽만 바꾸면 됩니다.
+   ▸ 말이 빠르다는 말씀이 있어 느리게 잡았습니다. 아래 SAY_RATE 만 고치면 됩니다.
+     숫자가 작을수록 느립니다. 0.5 아래로 내리면 기계음이 되기 쉽습니다. ═══ */
+const SAY_RATE={ko:0.62,en:0.66};
 const Voice={ok:'speechSynthesis' in window,v:{ko:null,en:null},primed:false,
  pick(){if(!this.ok)return;const vs=speechSynthesis.getVoices();
    this.v.ko=vs.find(x=>/^ko/i.test(x.lang))||null;
@@ -740,7 +743,7 @@ const Voice={ok:'speechSynthesis' in window,v:{ko:null,en:null},primed:false,
    const u=new SpeechSynthesisUtterance(x.replace(/\n/g,' '));
    u.lang=state.lang==='ko'?'ko-KR':'en-GB';
    const v=this.v[state.lang]; if(v)u.voice=v;
-   u.rate=state.lang==='ko'?0.74:0.78; u.pitch=0.94; u.volume=0.92;
+   u.rate=SAY_RATE[state.lang]||0.65; u.pitch=0.94; u.volume=0.92;
    speechSynthesis.speak(u);}catch(e){}},
  hush(){if(this.ok){try{speechSynthesis.cancel();}catch(e){}}}};
 if(Voice.ok){Voice.pick();speechSynthesis.onvoiceschanged=()=>Voice.pick();}
@@ -917,7 +920,7 @@ function settleThen(){
   s.textContent=d.settle+'\n'+eye+'\n'+L.settleWord;
   requestAnimationFrame(()=>s.classList.add('show'));
   Voice.say(d.spoken+' '+eye+' '+L.settleWord);
-  const wait=state.peek?3200:(state.voice?14000:7000);
+  const wait=state.peek?3200:(state.voice?16500:7000);
   timers.push(setTimeout(()=>{
     s.classList.remove('show');
     timers.push(setTimeout(()=>{s.style.display='none';$('ringWrap').style.display='grid';begin();},1300));
