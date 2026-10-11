@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>선:온 — 마음을 켜는 3분</title>
+
+<!-- 홈 화면에 앱으로 두기 — manifest.webmanifest, sw.js 와 짝입니다 -->
+<link rel="icon" href="/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0B1219">
+<meta name="application-name" content="선:온">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="선:온">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
@@ -181,6 +192,9 @@ hr{border:0;border-top:1px solid #B4C2B8;margin:34px 0}
 .step-box{border:1px solid var(--gold);padding:20px 22px;margin:30px 0 0;background:rgba(190,155,62,.07)}
 .step-box p{font-family:var(--display);font-size:16.5px;line-height:1.85;margin:0 0 14px;color:#25382E}
 .opts{display:flex;gap:11px;flex-wrap:wrap;margin-top:30px}
+.install{margin-top:22px}
+.install .next{margin-top:0}
+.installhow{font-size:13px;line-height:1.85;color:#2C4136;margin:12px 0 0;max-width:34ch}
 .foot{font-size:11.5px;color:#6C7E72;line-height:1.85;margin:34px 0 0}
 
 /* 종소리 방 */
@@ -342,6 +356,10 @@ hr{border:0;border-top:1px solid #B4C2B8;margin:34px 0}
       <button class="next" style="margin-top:0" id="btnOther" data-t="other"></button>
       <button class="next" style="margin-top:0" id="btnAgain" data-t="home"></button>
     </div>
+    <div class="install" id="installRow" hidden>
+      <button class="next" id="btnInstall" data-t="installBtn"></button>
+      <p class="installhow" id="installHow" hidden></p>
+    </div>
     <p class="foot" data-t="foot"></p>
   </div>
 </section>
@@ -407,6 +425,11 @@ ko:{
  stepBtn:'가까운 곳 찾아보기', stepQuery:'가까운 절 참선 명상',
  waitH:'곧 함께 시작합니다', waitNote:'친구도 같은 화면을 보고 있습니다.',
  linkMade:'링크를 복사했습니다. 친구에게 보내세요. 3분 뒤 둘이 같이 시작합니다.',
+ installBtn:'홈 화면에 앱으로 두기',
+ installIOS:'사파리 아래쪽 가운데의 공유 버튼(네모에서 화살표가 위로 나온 모양)을 누른 뒤 「홈 화면에 추가」를 고르세요.',
+ installSamsung:'아래쪽 ≡ 메뉴에서 「현재 페이지 추가」를 누르고 「홈 화면」을 고르세요.',
+ installAndroid:'오른쪽 위 ⋮ 메뉴에서 「앱 설치」 또는 「홈 화면에 추가」를 고르세요.',
+ installDesktop:'주소창 오른쪽의 설치 아이콘을 누르거나 브라우저 메뉴에서 「앱 설치」를 고르세요. 휴대폰에서 여시면 홈 화면에 둘 수 있습니다.',
  daily:['오늘의 한 줄']
 },
 en:{
@@ -450,6 +473,11 @@ en:{
  stepBtn:'Find somewhere near', stepQuery:'Korean Buddhist temple meditation',
  waitH:'Beginning together shortly', waitNote:'Your friend is looking at the same screen.',
  linkMade:'Link copied. Send it to your friend. You both begin in three minutes.',
+ installBtn:'Keep it on your home screen',
+ installIOS:'In Safari, tap the Share button at the bottom (a square with an arrow pointing up), then choose “Add to Home Screen”.',
+ installSamsung:'Open the ≡ menu at the bottom, tap “Add page to”, then choose “Home screen”.',
+ installAndroid:'Open the ⋮ menu at the top right and choose “Install app” or “Add to Home screen”.',
+ installDesktop:'Click the install icon at the right of the address bar, or choose “Install” from the browser menu. On a phone you can keep it on the home screen.',
  daily:['A line for today']
 }};
 
@@ -848,6 +876,7 @@ function applyLang(){
   const day=Math.floor((Date.now()+9*36e5)/864e5);
   $('daily').innerHTML=`<b>${state.lang==='ko'?'오늘의 한 줄':'A LINE FOR TODAY'}</b>${arr[day%arr.length]}`;
   $('waitH').textContent=L.waitH; $('waitNote').textContent=L.waitNote;
+  const ih=$('installHow'); if(ih) ih.hidden=true;
 }
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{Voice.hush();state.lang=b.dataset.l;applyLang();});
 
@@ -1037,6 +1066,38 @@ document.querySelectorAll('#roomPick .chip').forEach(b=>b.onclick=()=>{
   timers.push(setTimeout(()=>{bell(.18);timers.push(setTimeout(()=>show('wake'),4000));},ms));
 });
 $('btnRoomStop').onclick=()=>{clearAll();show('wake');};
+
+/* ═══ 14-2. 홈 화면에 앱으로 두기 ═══
+   수행을 마친 뒤 화면에 버튼이 있습니다. 한 번 앉아 본 분이 다시 오고 싶을 때
+   찾기 쉽게 두었습니다.
+   ▸ 안드로이드 크롬처럼 설치 창을 띄울 수 있는 곳에서는 바로 띄웁니다.
+   ▸ 아이폰 사파리처럼 그런 창이 없는 곳에서는 방법을 적어 줍니다.
+   ▸ 이미 앱으로 열려 있으면 버튼을 감춥니다. ═══ */
+(function installHelp(){
+  const row=$('installRow'), btn=$('btnInstall'), how=$('installHow');
+  if(!row) return;
+  const standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  if(standalone) return;
+  row.hidden=false;
+  let deferred=null;
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;});
+  window.addEventListener('appinstalled',()=>{row.hidden=true;});
+  const ua=navigator.userAgent||'';
+  const ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  btn.onclick=async()=>{
+    if(deferred){ deferred.prompt(); try{ await deferred.userChoice; }catch(e){} deferred=null; return; }
+    const L=t();
+    how.textContent= ios ? L.installIOS
+      : /SamsungBrowser/i.test(ua) ? L.installSamsung
+      : /Android/i.test(ua) ? L.installAndroid
+      : L.installDesktop;
+    how.hidden=false;
+  };
+})();
+/* 인터넷이 끊겨도 홈 화면의 선:온이 열리도록 — sw.js */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('/sw.js').catch(()=>{}); });
+}
 
 /* ═══ 15. 시작 ═══ */
 applyLang();

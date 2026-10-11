@@ -1,0 +1,20 @@
+{
+  "name": "선:온 — 마음을 켜는 3분",
+  "short_name": "선:온",
+  "description": "짧게 앉아 숨을 지켜보는 3분 명상",
+  "lang": "ko",
+  "dir": "ltr",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B1219",
+  "theme_color": "#0B1219",
+  "categories": ["health", "lifestyle"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
